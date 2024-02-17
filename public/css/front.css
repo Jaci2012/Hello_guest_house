@@ -1,0 +1,95 @@
+body {
+    margin: 0;
+    font-family: 'Arial', sans-serif;
+}
+
+.container {
+    width: 80%;
+    margin: 0 auto;
+}
+
+header {
+    background-color: #333;
+    color: #fff;
+    padding: 15px 0;
+    position: fixed;
+    width: 100%;
+    z-index: 1000;
+}
+
+header h1 {
+    margin: 0;
+    font-size: 24px;
+}
+
+nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+nav ul li {
+    display: inline-block;
+    margin-right: 20px;
+}
+
+nav a {
+    text-decoration: none;
+    color: #fff;
+    font-size: 16px;
+}
+
+.language-bar {
+    float: right;
+    margin-top: 5px;
+}
+
+.language-bar select {
+    padding: 8px;
+    border: none;
+    background-color: #555;
+    color: #fff;
+}
+
+.hero {
+    margin-top: 80px; /* Adjust this value based on your header height */
+}
+
+.hero img {
+    width: 100%;
+    height: auto;
+}
+
+.reservation-form {
+    background-color: #f5f5f5;
+    padding: 50px 0;
+}
+
+.reservation-form h2 {
+    text-align: center;
+}
+
+.reservation-form form {
+    max-width: 400px;
+    margin: 0 auto;
+}
+
+label {
+    display: block;
+    margin-bottom: 10px;
+}
+
+input {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    box-sizing: border-box;
+}
+
+button {
+    background-color: #333;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+}
