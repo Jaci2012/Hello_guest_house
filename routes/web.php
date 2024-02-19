@@ -37,6 +37,8 @@ Route::get('/', function () {
     Route::post('/reservations', [HotelController::class, 'reservationsStore'])->name('Reservations Store');
     Route::get('/reservations/{id}/edit', [HotelController::class, 'reservationsEdit'])->name('Reservations Edit');
     Route::put('/reservations/{id}', [HotelController::class, 'reservationsUpdate'])->name('Reservations Update');
-    Route::delete('/reservations/{id}', [HotelController::class, 'reservationsDestroy'])->name('Reservations Destroy');
+    Route::delete('/reservations/{id}/delete', [HotelController::class, 'reservationsDestroy'])
+    ->name('Reservations Destroy')
+    ->withoutMiddleware(['csrf']);
     //ROUTES POUR HISTORIQUES
     Route::get('/historiques', [HotelController::class, 'showReservationHistory'])->name('Historiques List');

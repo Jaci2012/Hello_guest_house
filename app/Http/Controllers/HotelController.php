@@ -25,6 +25,7 @@ class HotelController extends Controller
         $request->validate([
             'nom' => 'required|string|max:255',
             'prenom' => 'required|string|max:255',
+            'identifiant' => 'required|string|max:255',
         ]);
 
         ClientTypes::create($request->all());
@@ -97,6 +98,7 @@ class HotelController extends Controller
         $reservations = ReservationTypes::all();
         return view('dash.reserve', compact('reservations'));
     }
+    
     public function reservationsAdd()
     {
         $chambres = HotelTypes::where('statut', 'non réservée')->get();

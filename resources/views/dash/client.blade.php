@@ -19,6 +19,7 @@
                     <th width="15px"></th>
                     <th>#ID</th>
                     <th>Nom & prénom</th>
+                    <th>Identifiants</th>
                     <th>Actions</th>
                 </tr>
             </thead>
@@ -28,6 +29,7 @@
                         <td><input type="checkbox"></td>
                         <td>{{ $client->id }}</td>
                         <td>{{ $client->nom }} {{ $client->prenom }}</td>
+                        <td>{{ $client->identifiant }}</td>
                         <td>
                             <div class="dropdown">
                                     <a class="btn btn-primary btn-sm" href="{{ route('Clients Edit', $client->id) }}">Edit</a>

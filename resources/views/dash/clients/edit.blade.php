@@ -17,6 +17,10 @@
             <label for="prenom" class="form-label">Prénom</label>
             <input type="text" class="form-control" id="prenom" name="prenom" value="{{ $client->prenom }}" autofocus>
         </div>
+        <div class="mb-3">
+            <label for="identifiant" class="form-label">ID</label>
+            <input type="text" class="form-control" id="identifiant" name="identifiant" value="{{ $client->identifiant }}" autofocus>
+        </div>
 
         <div class="mb-3">
             <button class="btn btn-primary d-grid w-100" type="submit">Mettre à jour</button>

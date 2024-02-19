@@ -10,5 +10,5 @@ class ClientTypes extends Model
     use HasFactory;
     protected $table = 'clients'; 
     
-    protected $fillable = ['nom', 'prenom'];
+    protected $fillable = ['nom', 'prenom', 'identifiant'];
 }
