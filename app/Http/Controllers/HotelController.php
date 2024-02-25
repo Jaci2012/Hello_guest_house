@@ -6,6 +6,7 @@ use App\Models\HotelTypes;
 use App\Models\ReservationTypes;
 use App\Models\ReservationHistory;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class HotelController extends Controller
 {
@@ -96,7 +97,29 @@ class HotelController extends Controller
     public function reservations()
     {
         $reservations = ReservationTypes::all();
-        return view('dash.reserve', compact('reservations'));
+        $chambres = HotelTypes::all();
+
+        $dateDebut = Carbon::now(); // Par exemple, la date actuelle
+        $dateFin = Carbon::now()->addDays(7); // Par exemple, 7 jours à partir de maintenant
+
+        // Initialisez un tableau pour stocker les dates uniques
+        $dates = [];
+
+        // Parcourez les réservations pour extraire les dates uniques
+    foreach ($reservations as $reservation) {
+        $startDate = new Carbon($reservation->date_debut);
+        $endDate = new Carbon($reservation->date_fin);
+
+        // Ajoutez chaque date entre la date de début et la date de fin à votre tableau de dates
+        while ($startDate->lte($endDate)) {
+            $dates[] = $startDate->toDateString(); // Convertissez la date en chaîne au format Y-m-d
+            $startDate->addDay(); // Passez à la journée suivante
+        }
+    }
+
+    // Supprimez les doublons en convertissant le tableau en ensemble puis en le reconvertissant en tableau
+    $dates = array_values(array_unique($dates));
+        return view('dash.reserve', compact('reservations', 'dates', 'chambres', 'dateDebut', 'dateFin'));
     }
     
     public function reservationsAdd()
@@ -109,28 +132,40 @@ class HotelController extends Controller
 
     public function reservationsStore(Request $request)
     {
-        $request->validate([
-            'chambre_id' => 'required|exists:chambres,id',
-            'client_id' => 'required|exists:clients,id',
-            'date_debut' => 'required|date',
-            'date_fin' => 'required|date|after:date_debut',
-        ]);
-    
-        $reservation = ReservationTypes::create([
-            'chambre_id' => $request->chambre_id,
-            'client_id' => $request->client_id,
-            'date_debut' => $request->date_debut,
-            'date_fin' => $request->date_fin,
-        ]);
-    
-    
-        // Mettre à jour le statut de la chambre correspondante
-        $chambre = HotelTypes::findOrFail($request->chambre_id);
-        $chambre->statut = 'réservée';
-        $chambre->save();
-    
-        return redirect()->route('Reservations List')->with('success', 'La réservation a été créée avec succès.');
+    $request->validate([
+        'chambre_id' => 'required|exists:chambres,id',
+        'client_id' => 'required|exists:clients,id',
+        'date_debut' => 'required|date',
+        'date_fin' => 'required|date|after:date_debut',
+    ]);
+
+    // Vérifier la disponibilité de la chambre pour les dates spécifiées
+    $chambreId = $request->chambre_id;
+    $dateDebut = $request->date_debut;
+    $dateFin = $request->date_fin;
+
+    $existingReservation = ReservationTypes::where('chambre_id', $chambreId)
+        ->where(function ($query) use ($dateDebut, $dateFin) {
+            $query->whereBetween('date_debut', [$dateDebut, $dateFin])
+                ->orWhereBetween('date_fin', [$dateDebut, $dateFin]);
+        })
+        ->exists();
+
+    if ($existingReservation) {
+        return redirect()->back()->with('error', 'La chambre n\'est pas disponible pour les dates spécifiées.');
     }
+
+    // Créer la réservation
+    $reservation = ReservationTypes::create([
+        'chambre_id' => $request->chambre_id,
+        'client_id' => $request->client_id,
+        'date_debut' => $request->date_debut,
+        'date_fin' => $request->date_fin,
+    ]);
+
+    return redirect()->route('Reservations List')->with('success', 'La réservation a été créée avec succès.');
+    }
+
     public function reservationsDestroy($id)
     {
     // Trouver la réservation à supprimer

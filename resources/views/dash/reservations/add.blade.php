@@ -9,6 +9,12 @@
     {{ session('success') }}
 </div>
 @endif
+
+@if (session('error'))
+    <div class="alert alert-danger" role="alert">
+        {{ session('error') }}
+    </div>
+@endif
 <form action="{{ route('Reservations Store') }}" method="POST">
     @csrf
     <div class="mb-3">

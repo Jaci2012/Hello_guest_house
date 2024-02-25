@@ -11,4 +11,9 @@ class ClientTypes extends Model
     protected $table = 'clients'; 
     
     protected $fillable = ['nom', 'prenom', 'identifiant'];
+
+    public function reservations()
+    {
+        return $this->hasMany(ReservationTypes::class);
+    }
 }
