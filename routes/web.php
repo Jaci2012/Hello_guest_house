@@ -42,3 +42,5 @@ Route::get('/', function () {
     ->withoutMiddleware(['csrf']);
     //ROUTES POUR HISTORIQUES
     Route::get('/historiques', [HotelController::class, 'showReservationHistory'])->name('Historiques List');
+    Route::get('/get-week-dates', [HotelController::class, 'getWeekDates'])->name('get-week-dates');
+

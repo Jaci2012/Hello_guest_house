@@ -96,31 +96,40 @@ class HotelController extends Controller
     //RESERVATIONS DEV
     public function reservations()
     {
+        $chambres = HotelTypes::all(); // Récupérez toutes les chambres
         $reservations = ReservationTypes::all();
-        $chambres = HotelTypes::all();
+    
+        // Initialisation d'un tableau pour marquer les dates réservées
+        $datesReserveesParChambre = [];
+    
+        foreach ($chambres as $chambre) {
+            foreach ($reservations as $reservation) {
+                if ($reservation->chambre_id == $chambre->id) {
+                    $debut = Carbon::parse($reservation->date_debut);
+                    $fin = Carbon::parse($reservation->date_fin);
 
-        $dateDebut = Carbon::now(); // Par exemple, la date actuelle
-        $dateFin = Carbon::now()->addDays(7); // Par exemple, 7 jours à partir de maintenant
-
-        // Initialisez un tableau pour stocker les dates uniques
-        $dates = [];
-
-        // Parcourez les réservations pour extraire les dates uniques
-    foreach ($reservations as $reservation) {
-        $startDate = new Carbon($reservation->date_debut);
-        $endDate = new Carbon($reservation->date_fin);
-
-        // Ajoutez chaque date entre la date de début et la date de fin à votre tableau de dates
-        while ($startDate->lte($endDate)) {
-            $dates[] = $startDate->toDateString(); // Convertissez la date en chaîne au format Y-m-d
-            $startDate->addDay(); // Passez à la journée suivante
+                    
+                    while ($debut->lte($fin)) {
+                        $datesReserveesParChambre[$chambre->id][$debut->format('Y-m-d')] = true;
+                        $debut->addDay();
+                    }
+                }
+            }
         }
+    
+        $dates = collect(); // Utilisez une collection pour stocker les dates
+        for ($i = 0; $i < 7; $i++) {
+            $date = Carbon::now()->addDays($i);
+            // Format : "Lundi 5 Mars"
+            $formattedDate = ucfirst($date->locale('fr')->isoFormat('dddd D MMMM')); // Utilisez 'isoFormat' pour un formatage personnalisé
+            $dates->push(['date' => $date->format('Y-m-d'), 'formatted' => $formattedDate]);
+        }
+    
+        return view('dash.reserve', compact('chambres', 'dates', 'datesReserveesParChambre'));
     }
+    
+    
 
-    // Supprimez les doublons en convertissant le tableau en ensemble puis en le reconvertissant en tableau
-    $dates = array_values(array_unique($dates));
-        return view('dash.reserve', compact('reservations', 'dates', 'chambres', 'dateDebut', 'dateFin'));
-    }
     
     public function reservationsAdd()
     {
@@ -203,4 +212,23 @@ class HotelController extends Controller
     // Passer les données à la vue
     return view('dash.historiques', compact('reservationHistory'));
     }
+
+    public function getWeekDates(Request $request)
+    {
+    $weekOffset = $request->query('weekOffset', 0);
+    $startOfWeek = Carbon::now()->addWeeks($weekOffset)->startOfWeek();
+
+    $dates = collect();
+    for ($i = 0; $i < 7; $i++) {
+        $date = $startOfWeek->copy()->addDays($i);
+        $dates->push($date->locale('fr')->isoFormat('dddd D MMMM')); // Format "Lundi 2 Mars"
+    }
+
+    // Ici, ajoutez votre logique pour déterminer la disponibilité des chambres pour ces dates si nécessaire
+
+    return response()->json([
+        'dates' => $dates,
+        // 'availability' => $availability, // Envoyez les données de disponibilité si vous les avez calculées
+    ]);
+}
 }

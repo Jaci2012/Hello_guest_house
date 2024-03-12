@@ -1,6 +1,6 @@
 @extends('base') 
 @section('content')
-<div class="container">
+
     <h4 class="py-3 mb-4">
         <span class="text-muted fw-light">Chambres /</span> Édition
     </h4>
@@ -18,5 +18,5 @@
             <button class="btn btn-primary d-grid w-100" type="submit">Mettre à jour</button>
         </div>
     </form>
-</div>
+
 @endsection

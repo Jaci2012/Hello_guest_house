@@ -1,46 +1,46 @@
 @extends('base')
 
 @section('content')
-    <h4 class="py-3 mb-4">
-        <span class="text-muted fw-light">État global des chambres</span>
-    </h4>
-    <a href="{{ route('Reservations Add') }}" class="btn btn-success btn-sm">Ajouter</a><br><br>
-
-    <div class="row">
-        @foreach($chambres as $chambre)
-            <div class="col-md-4 mb-4">
-                <div class="card">
-                    <div class="card-header">
-                        Chambre {{ $chambre->numero }}
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title">Disponibilité</h5>
-                        @if($chambre->estDisponible())
-                            <p class="card-text text-success">Disponible</p>
-                            <!-- Formulaire de réservation avec sélecteur de date -->
-                            <form action="{{ route('Reservations Add') }}" method="GET">
-                                <input type="hidden" name="chambre_id" value="{{ $chambre->id }}">
-                                <label for="date_debut">Date de début :</label>
-                                <input type="date" id="date_debut" name="date_debut" value="{{ now()->toDateString() }}">
-                                <button type="submit" class="btn btn-primary">Réserver</button>
-                            </form>
-                        @else
-                            <p class="card-text text-danger">Occupée</p>
-                            <h5 class="card-title">Dates d'occupation</h5>
-                            @foreach($chambre->reservations as $reservation)
-                                <p class="card-text">{{ $reservation->date_debut }} - {{ $reservation->date_fin }}</p>
-                                <p class="card-text">Réservé par: {{ $reservation->client->nom }}</p>
-                                <!-- Bouton "Supprimer" pour chaque réservation -->
-                                <form action="{{ route('Reservations Destroy', ['id' => $reservation->id]) }}" method="POST">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-danger">Supprimer</button>
-                                </form>
-                            @endforeach
-                        @endif
-                    </div>
-                </div>
+<h4 class="py-3 mb-4">
+    <span class="text-muted fw-light">Reservations /</span> Listes
+</h4>
+@if (session('success'))
+<div class="alert alert-success" role="alert">
+    {{ session('success') }}
+</div>
+@endif
+<a href="{{ route('Reservations Add') }}" class="btn btn-primary">Ajout</a>
+    <br>
+    <br>
+<div class="container">
+    <div id="reservations-calendar">
+        <div class="calendar-navigation">
+            <button id="prev-week">&#10094;</button>
+            <div class="dates-header" style="flex-grow: 1;">
+                @foreach($dates as $date)
+                <span class="date">{{ $date['formatted'] }}</span>
+                @endforeach
+            </div>
+            <button id="next-week">&#10095;</button>
+        </div>
+        <div class="rooms-availability">
+            @foreach($chambres as $chambre)
+    <div class="room-availability">
+        <p>{{ $chambre->numero }}</p>
+        @foreach($dates as $date)
+            <div class="date-availability">
+                <input type="checkbox" 
+                       id="room{{ $chambre->id }}-date{{ $date['date'] }}" 
+                       data-room-id="{{ $chambre->id }}" 
+                       data-date="{{ $date['date'] }}" 
+                       disabled>
+                <label for="room{{ $chambre->id }}-date{{ $date['date'] }}"></label>
             </div>
         @endforeach
     </div>
+@endforeach
+
+        </div>
+    </div>
+</div>
 @endsection

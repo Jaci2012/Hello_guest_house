@@ -1,7 +1,7 @@
 @extends('base') <!-- Assurez-vous que le nom de la vue que vous avez défini dans votre page de base est correctement référencé ici -->
 
 @section('content')
-<div class="container">
+
     <h4 class="py-3 mb-4">
         <span class="text-muted fw-light">Clients /</span> Ajout
     </h4>
@@ -25,7 +25,7 @@
             <button class="btn btn-primary d-grid w-100" type="submit">Ajouter</button>
         </div>
     </form>
-</div>
+
 
 
 @endsection

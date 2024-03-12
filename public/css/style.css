@@ -9768,3 +9768,33 @@ h6,
   padding: 0;
   list-style-type: none;
 }
+.calendar-container {
+  display: flex;
+  overflow-x: auto;
+}
+
+.rooms-list, .dates-header {
+  display: flex;
+  flex-direction: column;
+}
+
+.room, .date {
+  text-align: center;
+  padding: 10px;
+  border: 1px solid #ccc;
+}
+
+.dates-grid {
+  display: flex;
+  flex-direction: column;
+}
+
+.room-dates {
+  display: flex;
+  overflow-x: auto;
+}
+
+.reservation-checkbox {
+  margin: auto;
+  display: block;
+}

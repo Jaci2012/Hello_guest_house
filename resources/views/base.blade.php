@@ -30,6 +30,122 @@
             margin-right: 5px;
             cursor: pointer;
         }
+        .container {
+    display: flex;
+    max-width: 1200px;
+    margin: 20px auto;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* Ombre subtile */
+    border-radius: 8px; /* Bordures arrondies */
+    overflow: hidden; /* Assure que tout à l'intérieur respecte les bordures arrondies */
+}
+
+#rooms-list {
+    flex: 1;
+    background-color: #fff;
+    overflow-y: auto; /* Permettre le défilement */
+    border-right: 1px solid #eee;
+}
+
+#rooms-list h3 {
+    margin: 10px;
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+#rooms-list p {
+    height: 50px; /* Exemple de hauteur; ajustez selon le besoin */
+    display: flex;
+    align-items: center; /* Centre le texte verticalement */
+    margin: 0; /* Enlève les marges par défaut */
+    padding: 5px 10px; /* Ajustez le padding selon le besoin */
+    border-bottom: 1px solid #f0f0f0; /* Ajoute une séparation visuelle */
+}
+
+
+#rooms-list p:hover {
+    background-color: #f9f9f9; /* Interaction au survol */
+}
+
+#reservations-calendar {
+    flex: 3;
+    padding: 20px;
+}
+
+.date, .room {
+    text-align: center;
+    padding: 10px 0;
+}
+
+.calendar-navigation {
+    display: flex;
+    align-items: center;
+}
+
+.calendar-navigation button {
+    border: none;
+    background-color: transparent;
+    cursor: pointer;
+    font-size: 24px;
+    padding: 0 10px;
+}
+
+.dates-header {
+    display: flex;
+    overflow-x: auto;
+    flex-grow: 1;
+}
+
+.dates-header span {
+    flex: 1;
+    min-width: 100px; /* Assure une largeur minimale pour chaque date */
+    margin: 10px 5px;
+    background: #fff;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* Ombre subtile pour les dates */
+    cursor: pointer; /* Indique que l'élément est cliquable */
+    transition: transform 0.2s; /* Animation */
+}
+
+.dates-header span:hover {
+    transform: translateY(-2px); /* Effet au survol */
+}
+
+.room-availability {
+    height: 50px; /* Doit correspondre à la hauteur de #rooms-list p */
+    align-items: center; /* Pour aligner verticalement les cases à cocher */
+}
+
+
+.room-availability {
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid #eee; /* Séparer visuellement les lignes */
+}
+
+.room-name {
+    width: 20%; /* Assurez-vous que cela correspond à la largeur de #rooms-list */
+    text-align: center;
+    padding: 10px;
+    background-color: #f9f9f9; /* Un léger arrière-plan pour distinguer la colonne */
+}
+
+.date-availability {
+    flex-grow: 1;
+    text-align: center;
+    padding: 5px;
+}
+
+input[type="checkbox"] + label {
+    cursor: pointer;
+    height: 20px;
+    width: 20px;
+    display: inline-block;
+    background-color: #f0f0f0;
+}
+
+input[type="checkbox"]:checked + label {
+    background-color: #4CAF50; /* Vert pour les cases cochées */
+}
     </style>
 
 </head>
@@ -123,7 +239,7 @@
             <footer class="sticky-footer bg-white">
                 <div class="container my-auto">
                     <div class="copyright text-center my-auto">
-                        <span>Copyright &copy; Jaci 2024</span>
+                        <span>Copyright &copy; Hello Guest House 2024</span>
                     </div>
                 </div>
             </footer>
@@ -158,6 +274,38 @@
     <script src="{{ asset('js/demo/chart-area-demo.js') }}"></script>
     <script src="{{ asset('js/demo/chart-pie-demo.js') }}"></script>
     <script src="{{ asset('fullcalendar/dist/index.global.min.js') }}"></script>
+
+    <script>
+        let weekOffset = 0; // Gardez une trace du décalage par rapport à la semaine courante
+        
+        document.addEventListener('DOMContentLoaded', function() {
+            const prevWeekBtn = document.getElementById('prev-week');
+            const nextWeekBtn = document.getElementById('next-week');
+        
+            prevWeekBtn.addEventListener('click', function() { changeWeek(-1); });
+            nextWeekBtn.addEventListener('click', function() { changeWeek(1); });
+        
+            function changeWeek(direction) {
+                weekOffset += direction;
+                fetch(`/get-week-dates?weekOffset=${weekOffset}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        updateCalendarUI(data.dates); // Mettez à jour l'UI avec les nouvelles dates
+                    });
+            }
+        
+            function updateCalendarUI(dates) {
+                const datesHeader = document.querySelector('.dates-header');
+                datesHeader.innerHTML = ''; // Nettoyez les dates actuelles
+                dates.forEach(date => {
+                    const dateSpan = document.createElement('span');
+                    dateSpan.textContent = date;
+                    datesHeader.appendChild(dateSpan);
+                });
+            }
+        });
+        </script>
+        
 
 </body>
 
