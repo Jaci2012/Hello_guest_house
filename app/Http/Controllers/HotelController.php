@@ -127,9 +127,14 @@ class HotelController extends Controller
     
         return view('dash.reserve', compact('chambres', 'dates', 'datesReserveesParChambre'));
     }
-    
-    
 
+    public function reservationsTables()
+    {
+        $reservations = ReservationTypes::all();
+    
+        return view('dash.reserveTables', compact('reservations'));
+    }
+        
     
     public function reservationsAdd()
     {
@@ -205,30 +210,92 @@ class HotelController extends Controller
     }
 
     public function showReservationHistory()
-    {
-    // Récupérer toutes les entrées de l'historique des réservations
-    $reservationHistory = ReservationHistory::all();
-    
-    // Passer les données à la vue
-    return view('dash.historiques', compact('reservationHistory'));
-    }
+{
+    $reservationHistory = ReservationHistory::with(['chambre', 'client'])->get();
 
+    // Convertir l'historique des réservations pour FullCalendar
+    $events = $reservationHistory->map(function ($reservation) {
+        return [
+            'title' => $reservation->client->nom . " - Chambre " . $reservation->chambre->numero,
+            'start' => $reservation->date_debut,
+            'end' => $reservation->date_fin,
+            // Vous pouvez ajouter d'autres propriétés ici selon les besoins
+        ];
+    });
+
+    // Passer les données à la vue, en les convertissant en JSON
+    return view('dash.historiques', ['reservationHistoryJson' => $events->toJson()]);
+}
+    // Dans votre controller, ajustez la méthode getWeekDates pour inclure les réservations
     public function getWeekDates(Request $request)
-    {
+{
     $weekOffset = $request->query('weekOffset', 0);
     $startOfWeek = Carbon::now()->addWeeks($weekOffset)->startOfWeek();
 
     $dates = collect();
     for ($i = 0; $i < 7; $i++) {
         $date = $startOfWeek->copy()->addDays($i);
-        $dates->push($date->locale('fr')->isoFormat('dddd D MMMM')); // Format "Lundi 2 Mars"
+        $dates->push([
+            'date' => $date->format('Y-m-d'),
+            'formatted' => $date->locale('fr')->isoFormat('dddd D MMMM'),
+        ]);
     }
 
-    // Ici, ajoutez votre logique pour déterminer la disponibilité des chambres pour ces dates si nécessaire
+    $reservations = ReservationTypes::whereBetween('date_debut', [$startOfWeek, $startOfWeek->copy()->endOfWeek()])
+                                     ->orWhereBetween('date_fin', [$startOfWeek, $startOfWeek->copy()->endOfWeek()])
+                                     ->get();
+
+    $reservationsByDate = [];
+    foreach ($reservations as $reservation) {
+        $start = Carbon::parse($reservation->date_debut)->startOfDay();
+        $end = Carbon::parse($reservation->date_fin)->endOfDay();
+        for ($date = $start; $date->lte($end); $date->addDay()) {
+            $reservationsByDate[$date->format('Y-m-d')][$reservation->chambre_id] = [
+                'isReserved' => true,
+                'clientId' => $reservation->client_id, // Utilisez client_id comme indicateur distinctif
+            ];
+        }
+    }
 
     return response()->json([
         'dates' => $dates,
-        // 'availability' => $availability, // Envoyez les données de disponibilité si vous les avez calculées
+        'reservationsByDate' => $reservationsByDate,
+    ]);
+}
+
+public function getMonthDates(Request $request)
+{
+    $monthOffset = $request->query('monthOffset', 0);
+    $startOfMonth = Carbon::now()->addMonths($monthOffset)->startOfMonth();
+    $endOfMonth = $startOfMonth->copy()->endOfMonth();
+
+    $dates = collect();
+    for ($date = $startOfMonth; $date->lte($endOfMonth); $date->addDay()) {
+        $dates->push([
+            'date' => $date->format('Y-m-d'),
+            'formatted' => $date->locale('fr')->isoFormat('D MMMM'),
+        ]);
+    }
+
+    // Récupération des réservations pour le mois
+    $reservations = ReservationTypes::whereBetween('date_debut', [$startOfMonth, $endOfMonth])
+                                     ->orWhere(function($query) use ($startOfMonth, $endOfMonth) {
+                                         $query->whereBetween('date_fin', [$startOfMonth, $endOfMonth]);
+                                     })
+                                     ->get();
+
+    $reservationsByDate = [];
+    foreach ($reservations as $reservation) {
+        $start = Carbon::parse($reservation->date_debut)->startOfDay();
+        $end = Carbon::parse($reservation->date_fin)->endOfDay();
+        for ($date = $start; $date->lte($end); $date->addDay()) {
+            $reservationsByDate[$date->format('Y-m-d')][$reservation->chambre_id] = true;
+        }
+    }
+
+    return response()->json([
+        'dates' => $dates,
+        'reservationsByDate' => $reservationsByDate,
     ]);
 }
 }

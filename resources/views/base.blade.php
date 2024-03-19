@@ -11,7 +11,7 @@
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-    <link rel="manifest" href="/site.webmanifest">
+    {{-- <link rel="manifest" href="/site.webmanifest"> --}}
 
     <title>Hello Guest House</title>
 
@@ -195,14 +195,19 @@ input[type="checkbox"]:checked + label {
                     <span>Chambres</span></a>
             </li>
             <li class="nav-item">
+                <a class="nav-link" href="{{ route('Reservations ListTables') }}">
+                    <i class="fas fa-fw fa-newspaper"></i>
+                    <span>Reservé/Tables</span></a>
+            </li>
+            <li class="nav-item">
                 <a class="nav-link" href="{{ route('Reservations List') }}">
                     <i class="fas fa-fw fa-newspaper"></i>
-                    <span>Reservé</span></a>
+                    <span>Reservé/Checkbox</span></a>
             </li>
             <li class="nav-item">
                 <a class="nav-link" href="{{ route('Historiques List') }}">
                     <i class="fas fa-fw fa-newspaper"></i>
-                    <span>Historiques</span></a>
+                    <span>Historiques/FullCalendar</span></a>
             </li>
         </ul>
         <!-- End of Sidebar -->
@@ -268,44 +273,156 @@ input[type="checkbox"]:checked + label {
     <script src="{{ asset('js/sb-admin-2.min.js') }}"></script>
 
     <!-- Page level plugins -->
-    <script src="{{ asset('vendor/chart.js/Chart.min.js') }}"></script>
+    {{-- <script src="{{ asset('vendor/chart.js/Chart.min.js') }}"></script> --}}
 
     <!-- Page level custom scripts -->
-    <script src="{{ asset('js/demo/chart-area-demo.js') }}"></script>
-    <script src="{{ asset('js/demo/chart-pie-demo.js') }}"></script>
+    {{-- <script src="{{ asset('js/demo/chart-area-demo.js') }}"></script> --}}
+    {{-- <script src="{{ asset('js/demo/chart-pie-demo.js') }}"></script> --}}
     <script src="{{ asset('fullcalendar/dist/index.global.min.js') }}"></script>
 
-    <script>
-        let weekOffset = 0; // Gardez une trace du décalage par rapport à la semaine courante
-        
+    <script>     
         document.addEventListener('DOMContentLoaded', function() {
+            let weekOffset = 0;
+
             const prevWeekBtn = document.getElementById('prev-week');
             const nextWeekBtn = document.getElementById('next-week');
-        
-            prevWeekBtn.addEventListener('click', function() { changeWeek(-1); });
-            nextWeekBtn.addEventListener('click', function() { changeWeek(1); });
-        
+
+            prevWeekBtn.addEventListener('click', () => changeWeek(-1));
+            nextWeekBtn.addEventListener('click', () => changeWeek(1));
+
             function changeWeek(direction) {
                 weekOffset += direction;
                 fetch(`/get-week-dates?weekOffset=${weekOffset}`)
                     .then(response => response.json())
                     .then(data => {
-                        updateCalendarUI(data.dates); // Mettez à jour l'UI avec les nouvelles dates
+                        updateCalendarUI(data.dates, data.reservationsByDate);
                     });
-            }
-        
-            function updateCalendarUI(dates) {
-                const datesHeader = document.querySelector('.dates-header');
-                datesHeader.innerHTML = ''; // Nettoyez les dates actuelles
-                dates.forEach(date => {
-                    const dateSpan = document.createElement('span');
-                    dateSpan.textContent = date;
-                    datesHeader.appendChild(dateSpan);
+
+                }
+                // changeWeek(0);
+
+            function updateCalendarUI(dates, reservationsByDate) {
+            // Mise à jour des dates en haut
+            const datesHeader = document.querySelector('.dates-header');
+            datesHeader.innerHTML = '';
+            dates.forEach(date => {
+                const dateSpan = document.createElement('span');
+                dateSpan.className = 'date';
+                dateSpan.textContent = date.formatted;
+                datesHeader.appendChild(dateSpan);
+            });
+
+            // Réinitialiser et mettre à jour les états des cases à cocher pour les nouvelles dates
+            const roomAvailabilitySections = document.querySelectorAll('.room-availability');
+            roomAvailabilitySections.forEach(roomElem => {
+                const roomId = roomElem.dataset.roomId;
+                
+                // Important: Réinitialisez tous les états avant de les définir à nouveau
+                roomElem.querySelectorAll('.date-availability input[type="checkbox"]').forEach(checkbox => {
+                    checkbox.checked = false;
+                    checkbox.disabled = true; // Désactivez par défaut, activez si non réservé
                 });
-            }
+
+                // Mettez à jour en fonction des nouvelles données de réservation
+                dates.forEach((date, index) => {
+                    const checkbox = roomElem.querySelector(`#room${roomId}-date${date.date}`);
+                    const label = roomElem.querySelector(`label[for="room${roomId}-date${date.date}"]`);
+
+                    if (checkbox && reservationsByDate[date.date] && reservationsByDate[date.date][roomId]) {
+                        checkbox.checked = true;
+                        checkbox.disabled = false; // ou true si vous voulez que les réservées soient désactivées
+                        // Optionnel: changer la couleur basée sur clientId ou autre
+                    }
+                });
+            });
+        
+        }
         });
+    </script>
+        
+        {{-- <script>
+            var reservationsByDate = @json($datesReserveesParChambre);
+        </script> --}}
+        <script>
+        
+            document.addEventListener('DOMContentLoaded', function() {
+        let weekOffset = 0;
+    
+        const prevWeekBtn = document.getElementById('prev-week');
+        const nextWeekBtn = document.getElementById('next-week');
+    
+        prevWeekBtn.addEventListener('click', () => changeWeek(-1));
+        nextWeekBtn.addEventListener('click', () => changeWeek(1));
+    
+        function changeWeek(direction) {
+            weekOffset += direction;
+            fetch(`/get-week-dates?weekOffset=${weekOffset}`)
+                .then(response => response.json())
+                .then(data => {
+                    updateCalendarUI(data.dates, data.reservationsByDate);
+                });
+    
+            }
+            // changeWeek(0);
+    
+        function updateCalendarUI(dates, reservationsByDate) {
+        // Mise à jour des dates en haut
+        const datesHeader = document.querySelector('.dates-header');
+        datesHeader.innerHTML = '';
+        dates.forEach(date => {
+            const dateSpan = document.createElement('span');
+            dateSpan.className = 'date';
+            dateSpan.textContent = date.formatted;
+            datesHeader.appendChild(dateSpan);
+        });
+    
+        // Réinitialiser et mettre à jour les états des cases à cocher pour les nouvelles dates
+        const roomAvailabilitySections = document.querySelectorAll('.room-availability');
+        roomAvailabilitySections.forEach(roomElem => {
+            const roomId = roomElem.dataset.roomId;
+            
+            // Important: Réinitialisez tous les états avant de les définir à nouveau
+            roomElem.querySelectorAll('.date-availability input[type="checkbox"]').forEach(checkbox => {
+                checkbox.checked = false;
+                checkbox.disabled = true; // Désactivez par défaut, activez si non réservé
+            });
+    
+            // Mettez à jour en fonction des nouvelles données de réservation
+            dates.forEach((date, index) => {
+                const checkbox = roomElem.querySelector(`#room${roomId}-date${date.date}`);
+                const label = roomElem.querySelector(`label[for="room${roomId}-date${date.date}"]`);
+    
+                if (checkbox && reservationsByDate[date.date] && reservationsByDate[date.date][roomId]) {
+                    checkbox.checked = true;
+                    checkbox.disabled = false; // ou true si vous voulez que les réservées soient désactivées
+                    // Optionnel: changer la couleur basée sur clientId ou autre
+                }
+            });
+        });
+     
+    }
+    });
+    
+ 
         </script>
         
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                var calendarEl = document.getElementById('calendar');
+            
+                var calendar = new FullCalendar.Calendar(calendarEl, {
+                    initialView: 'dayGridMonth',
+                    headerToolbar: {
+                        left: 'prev,next today',
+                        center: 'title',
+                        right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                    },
+                    events: {!! $reservationHistoryJson !!}
+                });
+            
+                calendar.render();
+            });
+            </script>
 
 </body>
 

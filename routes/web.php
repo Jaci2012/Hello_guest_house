@@ -33,14 +33,14 @@ Route::get('/', function () {
     Route::delete('/chambres/{id}', [HotelController::class, 'chambresDestroy'])->name('Chambres Destroy');
     //ROUTES POUR RESERVATIONS
     Route::get('/reservations', [HotelController::class, 'reservations'])->name('Reservations List');
+    Route::get('/reservations/tables', [HotelController::class, 'reservationsTables'])->name('Reservations ListTables');
     Route::get('/reservations/create', [HotelController::class, 'reservationsAdd'])->name('Reservations Add');
     Route::post('/reservations', [HotelController::class, 'reservationsStore'])->name('Reservations Store');
     Route::get('/reservations/{id}/edit', [HotelController::class, 'reservationsEdit'])->name('Reservations Edit');
     Route::put('/reservations/{id}', [HotelController::class, 'reservationsUpdate'])->name('Reservations Update');
-    Route::delete('/reservations/{id}/delete', [HotelController::class, 'reservationsDestroy'])
-    ->name('Reservations Destroy')
-    ->withoutMiddleware(['csrf']);
+    Route::delete('/reservations/{id}/delete', [HotelController::class, 'reservationsDestroy'])->name('Reservations Destroy')->withoutMiddleware(['csrf']);
     //ROUTES POUR HISTORIQUES
     Route::get('/historiques', [HotelController::class, 'showReservationHistory'])->name('Historiques List');
     Route::get('/get-week-dates', [HotelController::class, 'getWeekDates'])->name('get-week-dates');
+    Route::get('/get-month-dates', [HotelController::class, 'getMonthDates'])->name('get-month-dates');
 
