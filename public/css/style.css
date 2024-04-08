@@ -9798,3 +9798,7 @@ h6,
   margin: auto;
   display: block;
 }
+.date-availability.reserved input[type="checkbox"] + label {
+  background-color: #f00; /* Rouge pour indiquer réservé */
+  color: #fff;
+}

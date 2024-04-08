@@ -240,6 +240,7 @@ class HotelController extends Controller
             'formatted' => $date->locale('fr')->isoFormat('dddd D MMMM'),
         ]);
     }
+    $chambres = HotelTypes::all();
 
     $reservations = ReservationTypes::whereBetween('date_debut', [$startOfWeek, $startOfWeek->copy()->endOfWeek()])
                                      ->orWhereBetween('date_fin', [$startOfWeek, $startOfWeek->copy()->endOfWeek()])
@@ -260,42 +261,43 @@ class HotelController extends Controller
     return response()->json([
         'dates' => $dates,
         'reservationsByDate' => $reservationsByDate,
+        'chambres' => $chambres,
     ]);
 }
 
-public function getMonthDates(Request $request)
-{
-    $monthOffset = $request->query('monthOffset', 0);
-    $startOfMonth = Carbon::now()->addMonths($monthOffset)->startOfMonth();
-    $endOfMonth = $startOfMonth->copy()->endOfMonth();
+// public function getMonthDates(Request $request)
+// {
+//     $monthOffset = $request->query('monthOffset', 0);
+//     $startOfMonth = Carbon::now()->addMonths($monthOffset)->startOfMonth();
+//     $endOfMonth = $startOfMonth->copy()->endOfMonth();
 
-    $dates = collect();
-    for ($date = $startOfMonth; $date->lte($endOfMonth); $date->addDay()) {
-        $dates->push([
-            'date' => $date->format('Y-m-d'),
-            'formatted' => $date->locale('fr')->isoFormat('D MMMM'),
-        ]);
-    }
+//     $dates = collect();
+//     for ($date = $startOfMonth; $date->lte($endOfMonth); $date->addDay()) {
+//         $dates->push([
+//             'date' => $date->format('Y-m-d'),
+//             'formatted' => $date->locale('fr')->isoFormat('D MMMM'),
+//         ]);
+//     }
 
-    // Récupération des réservations pour le mois
-    $reservations = ReservationTypes::whereBetween('date_debut', [$startOfMonth, $endOfMonth])
-                                     ->orWhere(function($query) use ($startOfMonth, $endOfMonth) {
-                                         $query->whereBetween('date_fin', [$startOfMonth, $endOfMonth]);
-                                     })
-                                     ->get();
+//     // Récupération des réservations pour le mois
+//     $reservations = ReservationTypes::whereBetween('date_debut', [$startOfMonth, $endOfMonth])
+//                                      ->orWhere(function($query) use ($startOfMonth, $endOfMonth) {
+//                                          $query->whereBetween('date_fin', [$startOfMonth, $endOfMonth]);
+//                                      })
+//                                      ->get();
 
-    $reservationsByDate = [];
-    foreach ($reservations as $reservation) {
-        $start = Carbon::parse($reservation->date_debut)->startOfDay();
-        $end = Carbon::parse($reservation->date_fin)->endOfDay();
-        for ($date = $start; $date->lte($end); $date->addDay()) {
-            $reservationsByDate[$date->format('Y-m-d')][$reservation->chambre_id] = true;
-        }
-    }
+//     $reservationsByDate = [];
+//     foreach ($reservations as $reservation) {
+//         $start = Carbon::parse($reservation->date_debut)->startOfDay();
+//         $end = Carbon::parse($reservation->date_fin)->endOfDay();
+//         for ($date = $start; $date->lte($end); $date->addDay()) {
+//             $reservationsByDate[$date->format('Y-m-d')][$reservation->chambre_id] = true;
+//         }
+//     }
 
-    return response()->json([
-        'dates' => $dates,
-        'reservationsByDate' => $reservationsByDate,
-    ]);
-}
+//     return response()->json([
+//         'dates' => $dates,
+//         'reservationsByDate' => $reservationsByDate,
+//     ]);
+// }
 }

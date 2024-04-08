@@ -263,6 +263,7 @@ input[type="checkbox"]:checked + label {
 
 
     <!-- Bootstrap core JavaScript-->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <script src="{{ asset('vendor/jquery/jquery.min.js') }}"></script>
     <script src="{{ asset('vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
 
@@ -279,133 +280,86 @@ input[type="checkbox"]:checked + label {
     {{-- <script src="{{ asset('js/demo/chart-area-demo.js') }}"></script> --}}
     {{-- <script src="{{ asset('js/demo/chart-pie-demo.js') }}"></script> --}}
     <script src="{{ asset('fullcalendar/dist/index.global.min.js') }}"></script>
-
-    <script>     
+        
+    <script>
         document.addEventListener('DOMContentLoaded', function() {
-            let weekOffset = 0;
-
-            const prevWeekBtn = document.getElementById('prev-week');
-            const nextWeekBtn = document.getElementById('next-week');
-
-            prevWeekBtn.addEventListener('click', () => changeWeek(-1));
-            nextWeekBtn.addEventListener('click', () => changeWeek(1));
-
-            function changeWeek(direction) {
-                weekOffset += direction;
-                fetch(`/get-week-dates?weekOffset=${weekOffset}`)
-                    .then(response => response.json())
-                    .then(data => {
-                        updateCalendarUI(data.dates, data.reservationsByDate);
-                    });
-
-                }
-                // changeWeek(0);
-
-            function updateCalendarUI(dates, reservationsByDate) {
-            // Mise à jour des dates en haut
-            const datesHeader = document.querySelector('.dates-header');
-            datesHeader.innerHTML = '';
-            dates.forEach(date => {
-                const dateSpan = document.createElement('span');
-                dateSpan.className = 'date';
-                dateSpan.textContent = date.formatted;
-                datesHeader.appendChild(dateSpan);
+    let weekOffset = 0;
+    
+    const prevWeekBtn = document.getElementById('prev-week');
+    const nextWeekBtn = document.getElementById('next-week');
+    
+    prevWeekBtn.addEventListener('click', () => changeWeek(-1));
+    nextWeekBtn.addEventListener('click', () => changeWeek(1));
+    
+    function changeWeek(direction) {
+        weekOffset += direction;
+        fetch(`/get-week-dates?weekOffset=${weekOffset}`)
+            .then(response => response.json())
+            .then(data => {
+                updateCalendarUI(data.dates, data.reservationsByDate, data.chambres);
             });
-
-            // Réinitialiser et mettre à jour les états des cases à cocher pour les nouvelles dates
-            const roomAvailabilitySections = document.querySelectorAll('.room-availability');
-            roomAvailabilitySections.forEach(roomElem => {
-                const roomId = roomElem.dataset.roomId;
-                
-                // Important: Réinitialisez tous les états avant de les définir à nouveau
-                roomElem.querySelectorAll('.date-availability input[type="checkbox"]').forEach(checkbox => {
-                    checkbox.checked = false;
-                    checkbox.disabled = true; // Désactivez par défaut, activez si non réservé
-                });
-
-                // Mettez à jour en fonction des nouvelles données de réservation
-                dates.forEach((date, index) => {
-                    const checkbox = roomElem.querySelector(`#room${roomId}-date${date.date}`);
-                    const label = roomElem.querySelector(`label[for="room${roomId}-date${date.date}"]`);
-
-                    if (checkbox && reservationsByDate[date.date] && reservationsByDate[date.date][roomId]) {
-                        checkbox.checked = true;
-                        checkbox.disabled = false; // ou true si vous voulez que les réservées soient désactivées
-                        // Optionnel: changer la couleur basée sur clientId ou autre
-                    }
-                });
-            });
-        
-        }
-        });
-    </script>
-        
-        {{-- <script>
-            var reservationsByDate = @json($datesReserveesParChambre);
-        </script> --}}
-        <script>
-        
-            document.addEventListener('DOMContentLoaded', function() {
-        let weekOffset = 0;
-    
-        const prevWeekBtn = document.getElementById('prev-week');
-        const nextWeekBtn = document.getElementById('next-week');
-    
-        prevWeekBtn.addEventListener('click', () => changeWeek(-1));
-        nextWeekBtn.addEventListener('click', () => changeWeek(1));
-    
-        function changeWeek(direction) {
-            weekOffset += direction;
-            fetch(`/get-week-dates?weekOffset=${weekOffset}`)
-                .then(response => response.json())
-                .then(data => {
-                    updateCalendarUI(data.dates, data.reservationsByDate);
-                });
-    
-            }
-            // changeWeek(0);
-    
-        function updateCalendarUI(dates, reservationsByDate) {
-        // Mise à jour des dates en haut
-        const datesHeader = document.querySelector('.dates-header');
-        datesHeader.innerHTML = '';
-        dates.forEach(date => {
-            const dateSpan = document.createElement('span');
-            dateSpan.className = 'date';
-            dateSpan.textContent = date.formatted;
-            datesHeader.appendChild(dateSpan);
-        });
-    
-        // Réinitialiser et mettre à jour les états des cases à cocher pour les nouvelles dates
-        const roomAvailabilitySections = document.querySelectorAll('.room-availability');
-        roomAvailabilitySections.forEach(roomElem => {
-            const roomId = roomElem.dataset.roomId;
-            
-            // Important: Réinitialisez tous les états avant de les définir à nouveau
-            roomElem.querySelectorAll('.date-availability input[type="checkbox"]').forEach(checkbox => {
-                checkbox.checked = false;
-                checkbox.disabled = true; // Désactivez par défaut, activez si non réservé
-            });
-    
-            // Mettez à jour en fonction des nouvelles données de réservation
-            dates.forEach((date, index) => {
-                const checkbox = roomElem.querySelector(`#room${roomId}-date${date.date}`);
-                const label = roomElem.querySelector(`label[for="room${roomId}-date${date.date}"]`);
-    
-                if (checkbox && reservationsByDate[date.date] && reservationsByDate[date.date][roomId]) {
-                    checkbox.checked = true;
-                    checkbox.disabled = false; // ou true si vous voulez que les réservées soient désactivées
-                    // Optionnel: changer la couleur basée sur clientId ou autre
-                }
-            });
-        });
-     
     }
-    });
     
- 
-        </script>
-        
+    function updateCalendarUI(dates, reservationsByDate, chambres) {
+    const datesHeader = document.querySelector('.dates-header');
+    datesHeader.innerHTML = '';
+    dates.forEach(date => {
+        const dateSpan = document.createElement('span');
+        dateSpan.className = 'date';
+        dateSpan.textContent = date.formatted;
+        datesHeader.appendChild(dateSpan);
+    });
+
+    const roomsSection = document.querySelector('.rooms-availability');
+    roomsSection.innerHTML = '';
+
+    chambres.forEach(chambre => {
+        const roomDiv = document.createElement('div');
+        roomDiv.className = 'room-availability';
+        roomDiv.dataset.roomId = chambre.id;
+
+        const roomHeader = document.createElement('h6');
+        roomHeader.textContent = `Chambre ${chambre.numero}`;
+        roomDiv.appendChild(roomHeader);
+
+        dates.forEach(date => {
+            const dateAvailabilityDiv = document.createElement('div');
+            dateAvailabilityDiv.className = 'date-availability';
+
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.dataset.date = date.date;
+            checkbox.dataset.roomId = chambre.id;
+            checkbox.id = `checkbox-${chambre.id}-${date.date}`;
+
+            const label = document.createElement('label');
+            label.htmlFor = checkbox.id;
+            
+            const isReserved = reservationsByDate[date.date] && reservationsByDate[date.date][chambre.id];
+            checkbox.checked = !!isReserved;
+            checkbox.disabled = !!isReserved;
+            // Appliquer le style selon si la chambre est réservée
+            dateAvailabilityDiv.style.backgroundColor = isReserved ? '#ffcccc' : 'transparent'; // Rouge si réservé, transparent sinon
+
+            dateAvailabilityDiv.appendChild(checkbox);
+            dateAvailabilityDiv.appendChild(label); // Assurez-vous d'ajouter le label si vous utilisez
+            roomDiv.appendChild(dateAvailabilityDiv);
+        });
+
+        roomsSection.appendChild(roomDiv);
+    });
+}
+
+
+
+
+
+    // Initialement charger les données pour la semaine actuelle
+    changeWeek(0);
+});
+
+
+    </script>
         
 
 </body>

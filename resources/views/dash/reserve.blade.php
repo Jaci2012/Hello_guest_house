@@ -23,24 +23,22 @@
         </div>
         <div class="rooms-availability">
             @foreach($chambres as $chambre)
-            <div class="room-availability">
+            <div class="room-availability" data-room-id="{{ $chambre->id }}">
                 <p>{{ $chambre->numero }}</p>
                 @foreach($dates as $date)
-                    <div class="date-availability">
-                        <input type="checkbox" 
-                            id="room{{ $chambre->id }}-date{{ $date['date'] }}" 
-                            data-room-id="{{ $chambre->id }}" 
-                            data-date="{{ $date['date'] }}"
-                            @if(isset($datesReserveesParChambre[$chambre->id][$date['date']]))
-                            checked disabled
-                            @else
-                            disabled
-                            @endif>
-                        <label for="room{{ $chambre->id }}-date{{ $date['date'] }}"></label>
-                    </div>
-                    @endforeach
+                <div class="date-availability">
+                    <input type="checkbox" 
+                        id="room{{ $chambre->id }}-date{{ $date['date'] }}" 
+                        data-room-id="{{ $chambre->id }}" 
+                        data-date="{{ $date['date'] }}"
+                        disabled>
+
+                    <label for="room{{ $chambre->id }}-date{{ $date['date'] }}"></label>
+                </div>
+                @endforeach
             </div>
             @endforeach
+
         </div>
     </div>
 </div>
